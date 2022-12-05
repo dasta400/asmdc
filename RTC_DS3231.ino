@@ -195,7 +195,8 @@ void rtc_get_time(){
 /* via the serial                                                            */
 /* The received bytes (in Hexadecimal) are YYMMDDW                           */
 /*      where YY = year, MM = month, DD = day,                               */
-/*             W = day of the week (Monday = 1)                              */
+/*             W = day of the week (Sunday = 1)                              */
+/* If clock was not running, it starts it                                    */
 /*****************************************************************************/
 void rtc_set_date(byte *rcvd_bytes){
     uint8_t in_year, in_month, in_day, in_dow;
@@ -218,6 +219,7 @@ void rtc_set_date(byte *rcvd_bytes){
 
     rtc.setDate(in_day, in_month, in_year);
     rtc.setWeek(in_dow);
+    if(rtc.isRunning() == false) rtc.startClock();
 }
 
 /*****************************************************************************/
@@ -225,6 +227,7 @@ void rtc_set_date(byte *rcvd_bytes){
 /* via the serial                                                            */
 /* The received bytes (in Hexadecimal) are HHMMSS                            */
 /*      where HH = hours, MM = minutes, SS = seconds                         */
+/* If clock was not running, it starts it                                    */
 /*****************************************************************************/
 void rtc_set_time(byte *rcvd_bytes){
     uint8_t in_hours, in_minutes, in_seconds;
@@ -239,10 +242,11 @@ void rtc_set_time(byte *rcvd_bytes){
         Serial.print(':');
         Serial.print(in_minutes);
         Serial.print(':');
-        Serial.print(in_seconds);
+        Serial.println(in_seconds);
     }
 
     rtc.setTime(in_hours, in_minutes, in_seconds);
+    if(rtc.isRunning() == false) rtc.startClock();
 }
 
 /*****************************************************************************

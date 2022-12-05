@@ -71,6 +71,17 @@ single byte:
 
 | Command | Description                        | Input Size | Input  | Output Size | Output      |
 | ------- | ---------------------------------- | ---------- | ------ | ----------- | ----------- |
+| A0      | FDD status                         | 0          | -      | 1           | _(see below)_ |
+| A1      | FDD      Busy                      | 0          | -      | 1           | 0x00=Not busy                                                           0x01=Busy |
+| A2      | Read sector from Floppy Disk       | 2          | sector_num_lsb sector_num_msb | 512 | Sector contents |
+| A3      | Write sector into Floppy Disk      | 512        | Sector contents | 0 | - |
+| A4      | Checks if a disk is in the drive   | 0          | -      | 1           | 0x00=Disk / 0xFF=NoDisk |
+| A5      | Checks if disk is Write Protected  | 0          | -      | 1           | 0x00=Protect / 0xFF=Unprotected |
+| A6      | Set drive as Double-density        | 0          | -      | 1           | Return code (0=success) |
+| A7      | Set drive as High-density          | 0          | -      | 0           | - |
+| A8      | Low-level format (no file system)  | 0          | -      | 1           | Return code (0=success) |
+| AA      | Turns the FDD motor ON            | 0          | -      | 0           | - |
+| AB      | Turns the FDD motor OFF           | 0          | -      | 0           | - |
 | B0      | SD Card status                     | 0          | -      | 1           | _(see below)_ |
 | B1      | SD Card Busy                       | 0          | -      | 1           |0x00=Not busy 0x01=Busy |
 | B2      | Read sector from Image in SD Card  | 2          | sector_num_lsb sector_num_msb | 512 | Sector contents |
@@ -87,6 +98,20 @@ single byte:
 | D0      | Test  NVRAM can be written         | 0          | -      | 1           | NVRAM capacity (in bytes) or 0xFF if failure |
 | D1      | Clear (Set all to zeros) NVRAM     | 0          | -      | 0           | - |
 
+### A0 (FDD status)
+
+Tells the status of the FDD.
+
+This command should be called after each command on the FDD to check if the
+command was successful or not. Any value other than 0x00 indicates and error.
+
+* **Lower Nibble** (0x00 if all OK)
+  * **bit 0** = not used
+  * **bit 1** = not used
+  * **bit 2** = set if last command resulted in error
+  * **bit 3** = not used
+* **Upper Nibble** (error code)
+
 ### B0 (SD Card status)
 
 Tells the status of the SD Card reader.
@@ -94,9 +119,12 @@ Tells the status of the SD Card reader.
 This command should be called after each command on the SD card to check if the
 command was successful or not. Any value other than 0x00 indicates and error.
 
-* **bit 0** = set if SD card was not found
-* **bit 1** = set if image file was not found
-* **bit 2** = set if last command resulted in error
+* **Lower Nibble** (0x00 if all OK)
+  * **bit 0** = set if SD card was not found
+  * **bit 1** = set if image file was not found
+  * **bit 2** = set if last command resulted in error
+  * **bit 3** = not used
+* **Upper Nibble** (number of disk image files found)
 
 ### C5 (Get RTC info)
 
@@ -125,3 +153,16 @@ This tool is for use with [dzOS](https://github.com/dasta400/dzOS). Otherwise,
 it does not have any purpose.
 
 It's written with [FreeBASIC](https://www.freebasic.net/). To compile use _fbc -static imgmngr.bas_
+
+---
+
+## Dependencies
+
+* Real-Time Clock
+  * [I2C_RTC.h](https://github.com/cvmanjoo/RTC)
+  * [Wire.h](https://github.com/cvmanjoo/RTC)
+* SD Card
+  * [SPI.h](https://www.arduino.cc/reference/en/libraries/sd)
+  * [SD.h](https://www.arduino.cc/reference/en/libraries/sd)
+* Floppy Disk Drive
+  * [ArduinoFDC.h](https://github.com/dhansel/ArduinoFDC)

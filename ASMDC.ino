@@ -66,6 +66,7 @@ void setup() {
     rtc_setup();        // Set up RTC Module (RTC)
     nvram_setup();      // Set up RTC Module (NVRAM)
     sd_setup();         // Set up SD Card Module
+    fdd_setup();        // Set up FDD Module
 
     if(DEBUG){ Serial.println("ASMDC Initialised."); }
 }
@@ -90,6 +91,10 @@ void loop() {
         Serial.print("Received: ");
         Serial.print(rcvd);
         Serial.println(" bytes");
+        // for(int b=0; b<rcvd; b++){
+        //     Serial.print(rcvd_buffer[b], HEX); Serial.print(" ");
+        //     if(b % 16 == 0) Serial.println("");
+        // }
     }
 
     while(rcvd_pos < SERIAL_BUFFER){
@@ -100,23 +105,40 @@ void loop() {
 
         switch(rcvd_buffer[rcvd_pos]){
         // SD card Controller
-        case SD_CMD_BUSY:       sd_cmd_busy();                      rcvd_pos++;   break;
-        case SD_CMD_GET_STATUS: sd_cmd_status();                    rcvd_pos++;   break;
-        case SD_CMD_READ_SEC:   sd_cmd_read_sector(rcvd_buffer);    rcvd_pos = SERIAL_BUFFER;   break;
-        case SD_CMD_WRITE_SEC:  rcvd_pos = sd_cmd_write_sector(rcvd_buffer);                    break;
-        case SD_CMD_CLOSE_IMG:  smd_cmd_close_img();                rcvd_pos++;                 break;
-        case SD_CMD_OPEN_IMG:   smd_cmd_open_img();                 rcvd_pos++;   break;
+        case SD_CMD_GET_STATUS:     sd_cmd_status();                    rcvd_pos++;                 break;
+        case SD_CMD_BUSY:           sd_cmd_busy();                      rcvd_pos++;                 break;
+        case SD_CMD_READ_SEC:       sd_cmd_read_sector(rcvd_buffer);    rcvd_pos = SERIAL_BUFFER;   break;
+        case SD_CMD_WRITE_SEC:      rcvd_pos = sd_cmd_write_sector(rcvd_buffer);                    break;
+        case SD_CMD_CLOSE_IMG:      sd_cmd_close_img(rcvd_buffer);      rcvd_pos += 2;              break;
+        case SD_CMD_OPEN_IMG:       sd_cmd_open_img(rcvd_buffer);       rcvd_pos += 2;              break;
+        case SD_CMD_IMG_INFO:       sd_cmd_get_img_info(rcvd_buffer);   rcvd_pos += 2;              break;
+        // FDD Controller
+        case FDD_CMD_GET_STATUS:    fdd_cmd_status();                   rcvd_pos++;                 break;
+        case FDD_CMD_BUSY:          fdd_cmd_busy();                     rcvd_pos++;                 break;
+        case FDD_CMD_READ_SEC:      fdd_cmd_read_sector(rcvd_buffer);   rcvd_pos = SERIAL_BUFFER;   break;
+        case FDD_CMD_WRITE_SEC:     rcvd_pos = fdd_cmd_write_sector(rcvd_buffer);                   break;
+        case FDD_CMD_CHKDISKIN:     fdd_check_disk_in();                rcvd_pos++;                 break;
+        case FDD_CMD_CHKWPROTECT:   fdd_check_wr_protect();             rcvd_pos++;                 break;
+        case FDD_CMD_SETYPE_DD:     fdd_set_disk_type(false);           rcvd_pos++;                 break;
+        case FDD_CMD_SETYPE_HD:     fdd_set_disk_type(true);            rcvd_pos++;                 break;
+        case FDD_CMD_FORMAT:        fdd_lowlvl_format();                rcvd_pos++;                 break;
+        case FDD_CMD_MOTOR_ON:      fdd_cmd_motor(true);                rcvd_pos++;                 break;
+        case FDD_CMD_MOTOR_OFF:     fdd_cmd_motor(false);               rcvd_pos++;                 break;
+        // case FDD_CMD_CHANGE_DISK:   fdd_select_drive();                 rcvd_pos++;                 break;
         // RTC Controller
-        case RTC_CMD_GET_DATE:  rtc_get_date();                     rcvd_pos++;   break;
-        case RTC_CMD_SET_DATE:  rtc_set_date(rcvd_buffer);          rcvd_pos++;   break;
-        case RTC_CMD_GET_TIME:  rtc_get_time();                     rcvd_pos++;   break;
-        case RTC_CMD_SET_TIME:  rtc_set_time(rcvd_buffer);          rcvd_pos++;   break;
-        case RTC_CMD_GET_INFO:  rtc_get_info();                     rcvd_pos++;   break;
-        case RTC_CMD_GET_BATT:  rtc_get_batt();                     rcvd_pos++;   break;
+        case RTC_CMD_GET_INFO:      rtc_get_info();                     rcvd_pos++;                 break;
+        case RTC_CMD_GET_BATT:      rtc_get_batt();                     rcvd_pos++;                 break;
+        case RTC_CMD_GET_DATE:      rtc_get_date();                     rcvd_pos++;                 break;
+        case RTC_CMD_GET_TIME:      rtc_get_time();                     rcvd_pos++;                 break;
+        case RTC_CMD_SET_DATE:      rtc_set_date(rcvd_buffer);          rcvd_pos += 5;              break;
+        case RTC_CMD_SET_TIME:      rtc_set_time(rcvd_buffer);          rcvd_pos += 4;              break;
         // NVRAM Controller
-        case NVRAM_CMD_TEST:    nvram_test();                       rcvd_pos++;   break;
-        case NVRAM_CLEAR:       nvram_clear();                      rcvd_pos++;   break;
-        default:                                                    rcvd_pos++;   break;
+        case NVRAM_CMD_TEST:        nvram_test();                       rcvd_pos++;                 break;
+        case NVRAM_CLEAR:           nvram_clear();                      rcvd_pos++;                 break;
+        default:
+            if(DEBUG){ Serial.print("Unknown: "); Serial.println(rcvd_buffer[rcvd_pos], HEX); }
+            rcvd_pos++;
+            break;
         }
 
         if(rcvd_buffer[rcvd_pos] == 0) break;

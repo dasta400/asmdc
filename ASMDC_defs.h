@@ -56,20 +56,34 @@
                                         // speed of the device connecting
 #define SERIAL_BUFFER       520         // Size of the receiving buffer
 
-#define SD_CS               48
+#define SD_CS               53          // ChipSelect PIN
 #define SD_SECSIZE          512         // 512 bytes per Sector
-#define SD_IMGNAME          "DASTAZ80.IMG"
 #define SD_BUSY_LED         22          // Which pin is the Busy LED connected to
 #define LED_ON              LOW
 #define LED_OFF             HIGH
 
+#define FDD_SECSIZE         512         // 512 bytes per Sector
+
 // Commands
+#define FDD_CMD_GET_STATUS  0xA0
+#define FDD_CMD_BUSY        0xA1
+#define FDD_CMD_READ_SEC    0xA2
+#define FDD_CMD_WRITE_SEC   0xA3
+#define FDD_CMD_CHKDISKIN   0xA4        // Checks if a disk is in th drive
+#define FDD_CMD_CHKWPROTECT 0xA5        // Checks if disk is Write Protected
+#define FDD_CMD_SETYPE_DD   0xA6        // Set drive as Double-density
+#define FDD_CMD_SETYPE_HD   0xA7        // Set drive as High-density (default)
+#define FDD_CMD_FORMAT      0xA8        // Low-level format (no file system)
+#define FDD_CMD_MOTOR_ON    0xAA        // Turns the FDD motor on
+#define FDD_CMD_MOTOR_OFF   0xAB        // Turns the FDD motor off
+
 #define SD_CMD_GET_STATUS   0xB0
 #define SD_CMD_BUSY         0xB1
 #define SD_CMD_READ_SEC     0xB2
 #define SD_CMD_WRITE_SEC    0xB3
 #define SD_CMD_CLOSE_IMG    0xB4
 #define SD_CMD_OPEN_IMG     0xB5
+#define SD_CMD_IMG_INFO     0xB6
 
 #define RTC_CMD_GET_INFO    0xC0
 #define RTC_CMD_GET_BATT    0xC1
