@@ -44,18 +44,18 @@
  */
 
 /*****************************************************************************/
-/* FDD Cable                                                                 */
+/* FDD Cable IBM PC-compatible standard FDD (tested with SAMSUNG SFD-321B/E) */
 /*      FDD Connector   Function                    Arduino Mega2560         */
 /*           2          Density Select                    42                 */
 /*           4          No connection                     No connection      */
 /*           6          No connection                     No connection      */
 /*           8          Index                             47                 */
-/*          10          MO-0                              37                 */
-/*          12          DS1                               40                 */
-/*          14          DS0                               36                 */
-/*          16          MO-1                              41                 */
-/*          18          Direction                         38                 */
-/*          20          Step                              39                 */
+/*          10          MO-0                              39                 */
+/*          12          DS1                               No connection      */
+/*          14          DS0                               38                 */
+/*          16          MO-1                              No connection      */
+/*          18          Direction                         40                 */
+/*          20          Step                              41                 */
 /*          22          Write Data                        46                 */
 /*          24          Write Enable                      45                 */
 /*          26          Track 00                          44                 */
@@ -64,6 +64,28 @@
 /*          32          Head Select                       49                 */
 /*          34          Disk Change                       No connection      */
 /*          1,3,5,...,31,33                               GND                */
+/*****************************************************************************/
+/* FDD Cable original A3010 FDD (Citizen OSDA-72C)                           */
+/*      FDD Connector   Function                    Arduino Mega2560         */
+/*           1          No connection                     No connection      */
+/*           2          Mode Select (1MB/2MB)             42                 */
+/*           4          No connection                     No connection      */
+/*           6          No connection                     No connection      */
+/*           8          Index                             47                 */
+/*          10          DS0                               38                 */
+/*          12          No connection                     No connection      */
+/*          14          No connection                     No connection      */
+/*          16          MOTOR ON                          39                 */
+/*          18          Direction                         40                 */
+/*          20          Step                              41                 */
+/*          22          Write Data                        46                 */
+/*          24          Write Gate                        45                 */
+/*          26          Track 0                           44                 */
+/*          28          Write Protect                     43                 */
+/*          30          Read Data                         48                 */
+/*          32          Side 1                            49                 */
+/*          34          Disk Change                       No connection      */
+/*          3,5,...,31,33                                 GND                */
 /*****************************************************************************/
 
 #include "ArduinoFDC.h"

@@ -72,11 +72,11 @@ single byte:
 | Command | Description                        | Input Size | Input  | Output Size | Output      |
 | ------- | ---------------------------------- | ---------- | ------ | ----------- | ----------- |
 | A0      | FDD status                         | 0          | -      | 1           | _(see below)_ |
-| A1      | FDD      Busy                      | 0          | -      | 1           | 0x00=Not busy                                                           0x01=Busy |
+| A1      | FDD      Busy                      | 0          | -      | 1           | 0x00=Not busy 0x01=Busy |
 | A2      | Read sector from Floppy Disk       | 2          | sector_num_lsb sector_num_msb | 512 | Sector contents |
 | A3      | Write sector into Floppy Disk      | 512        | Sector contents | 0 | - |
-| A4      | Checks if a disk is in the drive   | 0          | -      | 1           | 0x00=Disk / 0xFF=NoDisk |
-| A5      | Checks if disk is Write Protected  | 0          | -      | 1           | 0x00=Protect / 0xFF=Unprotected |
+| A4      | Checks if a disk is in the drive   | 0          | -      | 1           | 0x00=Disk_is_in 0xFF=NoDisk |
+| A5      | Checks if disk is Write Protected  | 0          | -      | 1           | 0x00=Protect 0xFF=Unprotected |
 | A6      | Set drive as Double-density        | 0          | -      | 1           | Return code (0=success) |
 | A7      | Set drive as High-density          | 0          | -      | 0           | - |
 | A8      | Low-level format (no file system)  | 0          | -      | 1           | Return code (0=success) |
@@ -89,7 +89,7 @@ single byte:
 | B4      | Close Image File                   | 0          | -      | -           | - |
 | B5      | Open Image File                    | 0          | -      | -           | - |
 | C0      | Get RTC info                       | 0          | -      | 1           | _(see below)_ |
-| C1      | Check Battery Health               | 0          | -      | 1           | 0xA0=Healthy 0x00=Dead |
+| C1      | Check Battery Health               | 0          | -      | 1           | 0xA0=HealthyBattery 0x00=DeadBattery |
 | C2      | Get current Date (in Hexadecimal)  | 0          | -      | 9           | CCYYMMDDW   |
 | C3      | Get current Time (in Hexadecimal)  | 0          | -      | 6           | HHMMSS      |
 | C4      | Set Date                           | 6          | YYMMDD | 0           | -           |
