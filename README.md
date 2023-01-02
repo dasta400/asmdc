@@ -4,7 +4,9 @@
 1. [How it works?](#how-it-works)
 1. [Advantages/Disadvantages](#advantagesdisadvantages)
 1. [Commands](#commands)
-1. [Tools](#tools)
+1. [Tools](#tools) (for [dastaZ80](https://github.com/dasta400/dzOS) only)
+    * [imgmnr (Image Manager)](#imgmnr-image-manager)
+    * [makeimgfile (Make Image File)](#makeimgfile-make-image-file)
 
 ---
 
@@ -92,7 +94,7 @@ single byte:
 | C1      | Check Battery Health               | 0          | -      | 1           | 0xA0=HealthyBattery 0x00=DeadBattery |
 | C2      | Get current Date (in Hexadecimal)  | 0          | -      | 9           | CCYYMMDDW   |
 | C3      | Get current Time (in Hexadecimal)  | 0          | -      | 6           | HHMMSS      |
-| C4      | Set Date                           | 6          | YYMMDD | 0           | -           |
+| C4      | Set Date                           | 7          | YYMMDDW | 0           | -           |
 | C5      | Set Time                           | 6          | HHMMSS | 0           | -           |
 | C6      | Get RTC Temperature                | 0          | -      | 1           | bits0-6=Celsius bit7=sign(1=negative)
 | D0      | Test  NVRAM can be written         | 0          | -      | 1           | NVRAM capacity (in bytes) or 0xFF if failure |
@@ -126,7 +128,7 @@ command was successful or not. Any value other than 0x00 indicates and error.
   * **bit 3** = not used
 * **Upper Nibble** (number of disk image files found)
 
-### C5 (Get RTC info)
+### C0 (Get RTC info)
 
 Tells information of the configuration of the RTC module.
 
@@ -143,16 +145,39 @@ running or not.
 
 ## Tools
 
+These tools are for use with [dzOS](https://github.com/dasta400/dzOS). Otherwise,
+don't have any purpose.
+
+And are written with [FreeBASIC](https://www.freebasic.net/). To compile use _fbc -static \<program>.bas_
+
 ### imgmnr (Image Manager)
 
 Allows to add, rename, delete and change attributes of files inside a DZFS image
 file. Plus create new image file, display the image file's catalogue and display
 the Superblock information.
 
-This tool is for use with [dzOS](https://github.com/dasta400/dzOS). Otherwise,
-it does not have any purpose.
+* Parameters:
+  * **-new** \<file> \<label> = create a new image (I recommend to use _makeimgfile_ instead)
+  * **-sblock**             = show Superblock
+  * **-cat**                = show disk Catalogue
+  * **-add** \<file>         = add file to image
+  * **-del** \<file>         = mark file as deleted
+  * **-ren** \<old> \<new>    = rename old filename to new
+  * **-attr** \<file> \<RHSE> = set new attributes to file
 
-It's written with [FreeBASIC](https://www.freebasic.net/). To compile use _fbc -static imgmngr.bas_
+### makeimgfile (Make Image File)
+
+Creates a Disk Image File and adds files from a list.
+
+In essence, allows me to re-assemble my programs and create a Disk Image File
+directly on the SD Card.
+
+* Parameters:
+  * \<filelist> = list of files to include in Image File
+    * Create an ASCII text file, and in each line add the name (with path relative to directory where this tool is running) of a binary file to be added to the Image File.
+  * \<imgfile>  = Image File (name) to be created
+  * \<label>    = Volume Label
+  * \<imgsize>  = Image File size in MB (max. 33)
 
 ---
 
