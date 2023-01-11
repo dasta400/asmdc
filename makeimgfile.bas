@@ -5,12 +5,13 @@
  * for dastaZ80
  * by David Asta (Jan 2023)
  * 
- * Version 1.0.0
+ * Version 1.1.0
  * Created on 2 Jan 2023
- * Last Modification 2 Jan 2023
+ * Last Modification 11 Jan 2023
  *******************************************************************************
  * CHANGELOG
- *   -
+ *   - 8 Jan 2023 - Load Address and Attributes assigned as per file extension.
+ *   - 11 Jan 2023 - Calculates the max. number of files depending on image size.
  *******************************************************************************
  *'/
 
@@ -44,7 +45,7 @@
 #include "vbcompat.bi"
 
 ' **** CONSTANTS ****
-Const As Integer    MAXFILES_IN_IMAGE           = 20
+Const As Integer    MAXFILES_IN_IMAGE           = 1023
 Const As Integer    SECTOR_SIZE                 = 512
 Const As Integer    SECTORS_PER_BLOCK           = 64
 Const As Integer    SBLOCK_TRAIL_SIZE           = 411
@@ -52,7 +53,12 @@ Const As ULong      NEWIMAGE_MAXSIZE            = 33
 Const As UShort     NEWIMAGE_SIGNATURE          = &hBAAB
 Const As String     NEWIMAGE_FSID               = "DZFSV1  "
 Const As String     NEWIMAGE_COPYRIGHT          = "Copyright 2022David Asta      The MIT License (MIT)"
-Const As UByte      DEFAULT_RHSE                = &h28
+Const As UByte      DEFAULT_RHSE_EXE            = &h18  ' E  EXE
+Const As UByte      DEFAULT_RHSE_FN6            = &h60  ' RS FN6
+Const As UByte      DEFAULT_RHSE_FN8            = &h80  ' RS FN8
+Const As UByte      DEFAULT_RHSE_SC1            = &h50  ' RS FN8
+Const As UByte      DEFAULT_RHSE_SC2            = &h70  ' RS FN8
+Const As UByte      DEFAULT_RHSE_SC3            = &h90  ' RS FN8
 Const As UShort     DEFAULT_LOAD_ADDR           = &h4420
 Const As Integer    BAT_SIZE                    = SECTORS_PER_BLOCK * SECTOR_SIZE
 Const As Integer    MAXFILESIZE                 = SECTORS_PER_BLOCK * SECTOR_SIZE
@@ -82,6 +88,7 @@ Dim Shared As Long          filelistPtr
 Dim Shared As UShort        bat_entry_number
 Dim Shared As String        filelist (1 To MAXFILES_IN_IMAGE)
 Dim Shared As Integer       filecounter
+Dim Shared As Integer       maxFiles
 
 ' **** SUBROUTINES *****
 Declare Sub OpenFiles
@@ -103,6 +110,9 @@ Declare Function GetDateNow() As String
 Declare Function GetTimeNow() As String
 Declare Function CalcSerialNumber(datenow As String, timenow As String) As ULong
 Declare Function LabelPadTo16(label As String) As String
+Declare Function GetAttribAsPerExtension(extension As String) As UByte
+Declare Function GetLoadAddrAsPerExtension(extension As String) As UShort
+Declare Function GetMaxFilesAllowed(imgsize As Integer) As Integer
 
 ' *****************************************************************************
 ' MAIN
@@ -115,8 +125,7 @@ arg_imgsize     = Val(Command(4))
 If Len(arg_filelist) = 0_
   Or Len(arg_imgfile) = 0_
   Or Len(arg_label) = 0_
-  Or arg_imgsize = 0_
-  Or arg_imgsize > NEWIMAGE_MAXSIZE Then
+  Or arg_imgsize = 0 Then
     Print
     Print "ERROR: not enough parameters"
     Print "Usage " + Command(0) + " <filelist> <imgfile> <label> <imgsize>"
@@ -127,6 +136,14 @@ If Len(arg_filelist) = 0_
     Print "         <imgsize>  = Image File size in MB (max. 33)"
     End
 End If
+
+If arg_imgsize > NEWIMAGE_MAXSIZE Then
+    Print "ERROR: Image Files can be of maximum " & NEWIMAGE_MAXSIZE & " MB"
+    End
+End If
+
+maxFiles = GetMaxFilesAllowed(arg_imgsize)
+Print "Max. files for a " & arg_imgsize & " MB Image File: " & maxFiles
 
 OpenFiles
 
@@ -217,6 +234,11 @@ Sub CreateBAT
             files(filecounter) = filename
             filelist(filecounter) = filename
             filecounter += 1
+            If filecounter > maxFiles Then
+                Print "Max. files (MAXFILES_IN_IMAGE) reached!"
+                Print "Image file not created."
+                End
+            End If
         End If
     Loop Until filename = ""
     
@@ -236,7 +258,7 @@ Sub CreateBAT
             filetimeStr = Right(Format(filedattim, "yyyy-mm-dd hh:mm:ss"), 8)
 
             bat.filename = StripFilename(files(i))
-            bat.attributes = DEFAULT_RHSE
+            bat.attributes = GetAttribAsPerExtension(Right(files(i), 3))
             bat.time_created = EncodeTime(filetimeStr)
             bat.date_created = EncodeDate(filedateStr)
             bat.time_modified = bat.time_created
@@ -245,7 +267,7 @@ Sub CreateBAT
             bat.file_size_sectors = CalcFileSizeSectors(bat.file_size_bytes)
             bat.entry_number = bat_entry_number
             bat.first_sector = CalcFirstSector(bat_entry_number)
-            bat.load_address = SwapEndianShort(DEFAULT_LOAD_ADDR)
+            bat.load_address = GetLoadAddrAsPerExtension(Right(files(i), 3))
 
             SaveBATdata(bat)
             Close #f
@@ -449,4 +471,40 @@ Function LabelPadTo16(label As String) As String
     Next i
 
     LabelPadTo16 = label
+End Function
+' *****************************************************************************
+Function GetAttribAsPerExtension(extension As String) As UByte
+    Select Case extension:
+    Case "bin":
+        GetAttribAsPerExtension = DEFAULT_RHSE_EXE
+    Case "fn6":
+        GetAttribAsPerExtension = DEFAULT_RHSE_FN6
+    Case "fn8":
+        GetAttribAsPerExtension = DEFAULT_RHSE_FN8
+    Case "sc1":
+        GetAttribAsPerExtension = DEFAULT_RHSE_SC1
+    Case "sc2":
+        GetAttribAsPerExtension = DEFAULT_RHSE_SC2
+    Case "sc3":
+        GetAttribAsPerExtension = DEFAULT_RHSE_SC3
+    End Select
+End Function
+' *****************************************************************************
+Function GetLoadAddrAsPerExtension(extension As String) As UShort
+    Select Case extension:
+    Case "bin":
+        GetLoadAddrAsPerExtension = SwapEndianShort(DEFAULT_LOAD_ADDR)
+    Case Else:
+        GetLoadAddrAsPerExtension = &h0000
+    End Select
+End Function
+' *****************************************************************************
+Function GetMaxFilesAllowed(imgsize As Integer) As Integer
+' A DZFS Image File conssist of:
+'   1 Sector (512 bytes) - Superblock
+'   1 Block (64 Sectors = 32,768 bytes) - BAT
+'   rest of bytes - Data
+
+    '                    Image Size              - Superblock  - BAT                  / Bytes per file
+    GetMaxFilesAllowed = ((imgsize * 1024 * 1024) - SECTOR_SIZE - (64 * SECTOR_SIZE)) / (SECTORS_PER_BLOCK * SECTOR_SIZE)
 End Function
