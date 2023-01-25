@@ -5,13 +5,14 @@
  * for dastaZ80
  * by David Asta (Jan 2023)
  * 
- * Version 1.1.0
+ * Version 1.2.0
  * Created on 2 Jan 2023
- * Last Modification 11 Jan 2023
+ * Last Modification 25 Jan 2023
  *******************************************************************************
  * CHANGELOG
- *   - 8 Jan 2023 - Load Address and Attributes assigned as per file extension.
+ *   -  8 Jan 2023 - Load Address and Attributes assigned as per file extension.
  *   - 11 Jan 2023 - Calculates the max. number of files depending on image size.
+ *   - 25 Jan 2023 - Skip lines starting with # in filelist
  *******************************************************************************
  *'/
 
@@ -231,13 +232,15 @@ Sub CreateBAT
     Do
         Line Input #filelistPtr, filename
         If Len(filename) > 0 Then
-            files(filecounter) = filename
-            filelist(filecounter) = filename
-            filecounter += 1
-            If filecounter > maxFiles Then
-                Print "Max. files (MAXFILES_IN_IMAGE) reached!"
-                Print "Image file not created."
-                End
+            If Left(filename, 1) <> "#" Then
+                files(filecounter) = filename
+                filelist(filecounter) = filename
+                filecounter += 1
+                If filecounter > maxFiles Then
+                    Print "Max. files (MAXFILES_IN_IMAGE) reached!"
+                    Print "Image file not created."
+                    End
+                End If
             End If
         End If
     Loop Until filename = ""
