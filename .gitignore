@@ -2,3 +2,7 @@ build/*
 
 # Get latest from https://github.com/dhansel/ArduinoFDC
 ArduinoFDC.*
+
+# FreeBASIC compiled executables
+imgmngr
+makeimgfile

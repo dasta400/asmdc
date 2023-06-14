@@ -8,12 +8,12 @@
  * image file. Plus create new image file, display the image file's catalogue
  * and display the Superblock information.
  * 
- * Version 1.0.0
+ * Version 1.1.0
  * Created on 08 Nov 2022
- * Last Modification 08 Nov 2022
+ * Last Modification 14 Jun 2023
  *******************************************************************************
  * CHANGELOG
- *   -
+ *   - 14 Jun 2023 - Added -get parameter
  *******************************************************************************
  *******************************************************************************
  * To Dos
@@ -124,6 +124,7 @@ Declare Sub CreateNewImage(filename As String, label As String)
 Declare Function LoadBAT() As Boolean
 Declare Function FindFreeEntryInBAT() As Integer
 Declare Function AddFile(filename As String) As Integer
+Declare Function ExtractFile(filename As String) As Integer
 Declare Function DeleteFile(filename As String) As Integer
 Declare Function RenameFile(oldname As String, newname As String) As Integer
 Declare Function DecodeTime(intime As UShort) As String
@@ -133,6 +134,8 @@ Declare Function EncodeDate(datenow As String) As UShort
 Declare Function SwapEndian(invalue As UShort) As UShort
 Declare Function SearchFileInBAT(filename As String) As Integer
 Declare Function CalculateVolumeSerialNumber() As ULong
+Declare Function GetBATFilenameLength(bat_entry As Integer) As Integer
+Declare Function GetBATFilenameString(bat_entry As Integer) As String
 
 ' *****************************************************************************
 ' MAIN
@@ -151,6 +154,7 @@ If Len(arg_filename) = 0 Or Len(arg_option) = 0 Then
     Print "         -sblock             = show Superblock"
     Print "         -cat                = show disk Catalogue"
     Print "         -add <file>         = add file to image"
+    Print "         -get <file>         = extract file from image"
     Print "         -del <file>         = mark file as deleted"
     Print "         -ren <old> <new>    = rename old filename to new"
     Print "         -attr <file> <RHSE> = set new attributes to file"
@@ -186,6 +190,20 @@ Case "-add"
             Else
                 Print "ERROR: ";arg_suboption;" was not added."
             End If
+        End If
+    End If
+Case "-get"
+    If Len(arg_suboption) = 0 Then
+        Print "ERROR: not enough parameters"
+    Else
+        If LoadBAT() Then
+            If ExtractFile(arg_suboption) > 0 Then
+                Print arg_suboption;" was extracted successfully."
+            Else
+                Print "ERROR: ";arg_suboption;" was not extracted."
+            End If
+        Else
+            Print "ERROR: ";arg_suboption;" was not extracted."
         End If
     End If
 Case "-del"
@@ -230,7 +248,7 @@ fclose(filePtr)
 
 ' *****************************************************************************
 Sub ShowCatalogue
-    Dim As Integer e, f
+    Dim As Integer e, f, c
 
     Print
     Print "File            Created               Modified              Size   Attributes Load Address"
@@ -239,9 +257,10 @@ Sub ShowCatalogue
     For e = 0 To ENTRIES_PER_BAT
         If bat(e).filename(0) = 0 Then Exit For 
 
-        For f = 0 To FILENAME_SIZE
-            Print Chr(bat(e).filename(f));
-        Next f
+        Print(GetBATFilenameString(e));
+        For c = GetBATFilenameLength(e) To FILENAME_SIZE
+            Print(" ");
+        Next c
         Print Using "  & &   & & ##,###   &          &";_
             DecodeTime(SwapEndian(bat(e).time_created));_
             DecodeDate(SwapEndian(bat(e).date_created));_
@@ -294,7 +313,7 @@ End Sub
 
 ' *****************************************************************************
 Sub CreateNewImage(filename As String, label As String)
-
+' TODO
 End Sub
 
 ' *****************************************************************************
@@ -398,6 +417,50 @@ Function RenameFile(oldname As String, newname As String) As Integer
 End Function
 
 ' *****************************************************************************
+Function ExtractFile(filename As String) As Integer
+    Dim As Integer b, result, batentry, file_1stsector, file_size_bytes
+    Dim AS Integer byte_count
+    Dim As ULong file_1stbyte
+    Dim As UByte file_byte
+    Dim As FILE Ptr extractFilePtr
+
+    result = 0
+    batentry = SearchFileInBAT(filename)
+
+    If batentry = -1 Then
+        Print "ERROR: file ";filename;" not found in BAT"
+    Else
+        file_1stsector = bat(batentry).first_sector
+        file_1stbyte = file_1stsector * SECTOR_SIZE
+        file_size_bytes = bat(batentry).file_size_bytes
+
+        Print "File '";
+        For f = 0 To FILENAME_SIZE
+            If Chr(bat(batentry).filename(f)) <> " " Then
+                Print Chr(bat(batentry).filename(f));
+            End If
+        Next f
+        Print "', of size";file_size_bytes;
+        Print " bytes, found at Sector";file_1stsector;" / Address 0x";Hex(file_1stbyte)
+        extractFilePtr = fopen(filename, "wb")
+        If extractFilePtr = 0 Then
+            Print "File ";filename;" couldn't be opened"
+        Else
+            byte_count = 0
+            fseek(filePtr, (file_1stsector * SECTOR_SIZE), SEEK_SET)
+            For b = 0 To file_size_bytes - 1
+                fread(@file_byte, SizeOf(UByte), 1, filePtr)
+                result = fwrite(@file_byte, SizeOf(UByte), 1, extractFilePtr)
+                byte_count += 1
+            Next b
+            fclose(extractFilePtr)
+        End If
+    End If
+
+    ExtractFile = result
+End Function
+
+' *****************************************************************************
 Function AddFile(filename As String) As Integer
     Dim As Integer b, result, batentry, newfile_1stsector
     Dim As UShort newfile_size
@@ -465,6 +528,10 @@ End Function
 
 ' *****************************************************************************
 Function SearchFileInBAT(filename As String) As Integer
+' Searches a specified filename in the BAT.
+' If the filename is found, the variable bat (structure bat_entry) is loaded
+'   with the values from the read BAT, and return value is the BAT entry number.
+' If not found, returns -1
     Dim As Integer e, c, batentry
 
     batentry = -1
@@ -472,13 +539,7 @@ Function SearchFileInBAT(filename As String) As Integer
     For e = 0 To ENTRIES_PER_BAT
         If bat(e).filename(0) = 0 Then Exit For
 
-        For c = 0 To FILENAME_SIZE
-            If bat(e).filename(c) <> &h20 Then
-                If bat(e).filename(c) <> filename[c] Then Exit For
-            End If
-        Next c
-
-        If c = FILENAME_SIZE + 1 Then
+        If filename = GetBATFilenameString(e) Then
             batentry = e
             Exit For
         End If
@@ -581,4 +642,31 @@ Function CalculateVolumeSerialNumber() As ULong
     serial_number Shl= 16
 
     CalculateVolumeSerialNumber = serial_number Or last_bytes
+End Function
+
+' *****************************************************************************
+Function GetBATFilenameLength(bat_entry As Integer) As Integer
+    Dim As Integer c, length
+
+    length = 0
+
+    For c = 0 To FILENAME_SIZE
+        If bat(bat_entry).filename(c) = &h20 Then Exit For
+        length += 1
+    Next c
+
+    GetBATFilenameLength = length
+End Function
+
+' *****************************************************************************
+Function GetBATFilenameString(bat_entry As Integer) As String
+    Dim As Integer c
+    Dim As String filename
+
+    For c = 0 To FILENAME_SIZE
+        If bat(bat_entry).filename(c) = &h20 Then Exit For
+        filename += Chr(bat(bat_entry).filename(c))
+    Next c
+
+    GetBATFilenameString = filename
 End Function

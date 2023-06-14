@@ -10,7 +10,7 @@
 
 ---
 
-An Arduino board acting as a _man-in-the-middle_ to allow my homebrew computer
+An Arduino board to allow my homebrew computer
 [dastaZ80](https://github.com/dasta400/dzOS) to communicate with different
 devices like Real-Time Clock, NVRAM, SD card, Floppy Disc Drive, and more.
 
@@ -21,10 +21,10 @@ kind of computer or microcontroller that has a serial communication port.
 
 ## Why this project?
 
-As I wanted to add some more peripherals to my homebrew computer
-[dastaZ80](https://github.com/dasta400/dzOS) (a Real-Time Clock (RTC), an SD
-card, an NVRAM and a Floppy Disc Drive) I made some calculations of the cost.
-Between components and PCBs, I came up with the  total cost of around 210 Euros.
+As I wanted to add some more peripherals (a Real-Time Clock (RTC), an SD
+card, an NVRAM and a Floppy Disc Drive) to my homebrew computer
+[dastaZ80](https://github.com/dasta400/dzOS), I made some calculations of the cost.
+Between components and PCBs, I came up with the  total cost of around €210.
 As I've already spent a couple of hundreds so far, this hobby is starting to be
 too expensive for my pocket.
 
@@ -32,9 +32,7 @@ On the other hand, I have already several Arduino boards (Uno, Mega2560,
 Leonardo) and several devices I got on a developer's kit, which happened to
 contain a DS3231 RTC (with NVRAM included) and a MicroSD Card Adapter.
 
-So I thought, why not make an Arduino to communicate with the RTC and SD card
-modules, plus an FDD if possible, and then make the Arduino to communicate with
-the dastaZ80 like if it was an external controller?
+So I thought, why not make an Arduino to communicate with those peripherals, and then make the Arduino to communicate with the dastaZ80. Just like if it was an external controller?
 
 As all Arduinos include serial ports (TX / RX pins) and I have a spare serial port
 on the dastaZ80 (SIO/2 Channel B), it should be relatively easy to make them to
@@ -45,10 +43,7 @@ talk to each other.
 ## How it works?
 
 The dastaZ80's SIO/2 Channel B is connected to an Arduino Mega2560's serial port.
-The dastaZ80 sends commands (identified by a unique single byte) to the Arduino,
-which interprets the received command and communicates with the corresponding
-attached device (e.g. get time from the RTC), and send information back to the
-dastaZ80.
+The dastaZ80 sends [commands](#commands) (identified by a unique single byte) to the Arduino, which interprets the received command and communicates with the corresponding attached device (e.g. get time from the RTC), and sends information back to the dastaZ80.
 
 ---
 
@@ -61,8 +56,7 @@ dastaZ80.
   images, or to have multiple disks.
   * Expandable. For example to add a PseudoRandom Number Generator (PRNG).
 * **Disadvanges**:
-  * Slower disk (SD card) access? I haven't benchmarked it.
-  * If I would like to run DRI CP/M, I would need to modify CP/M's code.
+  * Slower disk (SD card) access? I didn't benchmark it yet.
 
 ---
 
@@ -146,21 +140,20 @@ running or not.
 ## Tools
 
 These tools are for use with [dzOS](https://github.com/dasta400/dzOS). Otherwise,
-don't have any purpose.
+don't have much of a purpose.
 
 And are written with [FreeBASIC](https://www.freebasic.net/). To compile use _fbc -static \<program>.bas_
 
 ### imgmnr (Image Manager)
 
-Allows to add, rename, delete and change attributes of files inside a DZFS image
-file. Plus create new image file, display the image file's catalogue and display
-the Superblock information.
+Allows to add, extract, rename, delete and change attributes of files inside a DZFS image file. Plus create new image file, display the image file's catalogue and display the Superblock information.
 
 * Parameters:
-  * **-new** \<file> \<label> = create a new image (I recommend to use _makeimgfile_ instead)
+  * **-new** \<file> \<label> = create a new image
   * **-sblock**             = show Superblock
   * **-cat**                = show disk Catalogue
   * **-add** \<file>         = add file to image
+  * **-get** \<file>         = extract file from image
   * **-del** \<file>         = mark file as deleted
   * **-ren** \<old> \<new>    = rename old filename to new
   * **-attr** \<file> \<RHSE> = set new attributes to file
