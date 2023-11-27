@@ -1,6 +1,7 @@
 # Arduino Serial Multi-Device Controller for dastaZ80's dzOS
 
 1. [Why this project?](#why-this-project)
+1. [This branch](#this-branch)
 1. [How it works?](#how-it-works)
 1. [Advantages/Disadvantages](#advantagesdisadvantages)
 1. [Commands](#commands)
@@ -16,6 +17,16 @@ devices like Real-Time Clock, NVRAM, SD card, Floppy Disc Drive, and more.
 
 Technically it is possible (but not tested) to use this project with any other
 kind of computer or microcontroller that has a serial communication port.
+
+---
+
+## This branch
+
+Initially I had the ASMDC as controller for FDD, RTC and SD card, but I was
+adding code I stumbled with Arduino errors because apparently I was using more
+memory than the available. Hence, I decided to separate the code in branches.
+
+This branch contains ONLY the code necessary for the FDD controller.
 
 ---
 

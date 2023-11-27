@@ -123,7 +123,7 @@ void LBA_to_STS(uint16_t lba){
 }
 
 /*****************************************************************************/
-/* Initial set up of the SD Card Module                                      */
+/* Initial set up of the FDD Module                                          */
 /*****************************************************************************/
 void fdd_setup(){
 

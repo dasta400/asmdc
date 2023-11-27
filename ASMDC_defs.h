@@ -56,8 +56,6 @@
                                         // speed of the device connecting
 #define SERIAL_BUFFER       520         // Size of the receiving buffer
 
-#define SD_CS               53          // ChipSelect PIN
-#define SD_SECSIZE          512         // 512 bytes per Sector
 #define SD_BUSY_LED         22          // Which pin is the Busy LED connected to
 #define LED_ON              LOW
 #define LED_OFF             HIGH
@@ -76,26 +74,3 @@
 #define FDD_CMD_FORMAT      0xA8        // Low-level format (no file system)
 #define FDD_CMD_MOTOR_ON    0xAA        // Turns the FDD motor on
 #define FDD_CMD_MOTOR_OFF   0xAB        // Turns the FDD motor off
-
-#define SD_CMD_GET_STATUS   0xB0
-#define SD_CMD_BUSY         0xB1
-#define SD_CMD_READ_SEC     0xB2
-#define SD_CMD_WRITE_SEC    0xB3
-#define SD_CMD_CLOSE_IMG    0xB4
-#define SD_CMD_OPEN_IMG     0xB5
-#define SD_CMD_IMG_INFO     0xB6
-
-#define RTC_CMD_GET_INFO    0xC0
-#define RTC_CMD_GET_BATT    0xC1
-#define RTC_CMD_GET_DATE    0xC2
-#define RTC_CMD_GET_TIME    0xC3
-#define RTC_CMD_SET_DATE    0xC4
-#define RTC_CMD_SET_TIME    0xC5
-#define RTC_CMD_GET_TEMP    0xC6
-
-#define NVRAM_CMD_TEST      0xD0
-#define NVRAM_CLEAR         0xD1
-
-// Error codes
-#define SD_ERR_NOSD         0x01
-#define SD_ERR_NOIMG        0x02

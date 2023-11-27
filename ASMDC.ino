@@ -5,27 +5,26 @@
  * for dastaZ80's dzOS
  * by David Asta (Oct 2022)
  * 
- * It reads/writes data from/to an SD card, and communicates with the dastaZ80
- * via serial port.
+ * It reads/writes data from/to an Floppy DIsk, and communicates with the
+ * dastaZ80 via serial port.
  * 
  * The dastaZ80's SIO/2 Channel B is connected to an Arduino. The dastaZ80
  * sends commands to the Arduino, via serial communication, for reading/writting
- * to/from an SD card attached to an SPI Card reader that is connected to the
- * Arduino.
+ * to/from an FDD that is connected to the Arduino.
  * 
  * Version 1.0.0
  * Created on 30 Oct 2022
- * Last Modification 30 Oct 2022
+ * Last Modification 27 Nov 2023
  *******************************************************************************
  * CHANGELOG
- *   -
+ *   - 27 Nov 2023 - Removed all code from RTC and SD card
  *******************************************************************************
  */
 
 /* ---------------------------LICENSE NOTICE--------------------------------
  *  MIT License
  *  
- *  Copyright (c) 2022 David Asta
+ *  Copyright (c) 2022-2023 David Asta
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -63,9 +62,6 @@ void setup() {
     Serial1.begin(SERIAL_DBPS);  // Serial port to dastaZ80
     Serial1.setTimeout(100);
 
-    rtc_setup();        // Set up RTC Module (RTC)
-    nvram_setup();      // Set up RTC Module (NVRAM)
-    sd_setup();         // Set up SD Card Module
     fdd_setup();        // Set up FDD Module
 
     if(DEBUG){ Serial.println("ASMDC Initialised."); }
@@ -104,14 +100,6 @@ void loop() {
         }
 
         switch(rcvd_buffer[rcvd_pos]){
-        // SD card Controller
-        case SD_CMD_GET_STATUS:     sd_cmd_status();                    rcvd_pos++;                 break;
-        case SD_CMD_BUSY:           sd_cmd_busy();                      rcvd_pos++;                 break;
-        case SD_CMD_READ_SEC:       sd_cmd_read_sector(rcvd_buffer);    rcvd_pos = SERIAL_BUFFER;   break;
-        case SD_CMD_WRITE_SEC:      rcvd_pos = sd_cmd_write_sector(rcvd_buffer);                    break;
-        case SD_CMD_CLOSE_IMG:      sd_cmd_close_img(rcvd_buffer);      rcvd_pos += 2;              break;
-        case SD_CMD_OPEN_IMG:       sd_cmd_open_img(rcvd_buffer);       rcvd_pos += 2;              break;
-        case SD_CMD_IMG_INFO:       sd_cmd_get_img_info(rcvd_buffer);   rcvd_pos += 2;              break;
         // FDD Controller
         case FDD_CMD_GET_STATUS:    fdd_cmd_status();                   rcvd_pos++;                 break;
         case FDD_CMD_BUSY:          fdd_cmd_busy();                     rcvd_pos++;                 break;
@@ -125,16 +113,6 @@ void loop() {
         case FDD_CMD_MOTOR_ON:      fdd_cmd_motor(true);                rcvd_pos++;                 break;
         case FDD_CMD_MOTOR_OFF:     fdd_cmd_motor(false);               rcvd_pos++;                 break;
         // case FDD_CMD_CHANGE_DISK:   fdd_select_drive();                 rcvd_pos++;                 break;
-        // RTC Controller
-        case RTC_CMD_GET_INFO:      rtc_get_info();                     rcvd_pos++;                 break;
-        case RTC_CMD_GET_BATT:      rtc_get_batt();                     rcvd_pos++;                 break;
-        case RTC_CMD_GET_DATE:      rtc_get_date();                     rcvd_pos++;                 break;
-        case RTC_CMD_GET_TIME:      rtc_get_time();                     rcvd_pos++;                 break;
-        case RTC_CMD_SET_DATE:      rtc_set_date(rcvd_buffer);          rcvd_pos += 5;              break;
-        case RTC_CMD_SET_TIME:      rtc_set_time(rcvd_buffer);          rcvd_pos += 4;              break;
-        // NVRAM Controller
-        case NVRAM_CMD_TEST:        nvram_test();                       rcvd_pos++;                 break;
-        case NVRAM_CLEAR:           nvram_clear();                      rcvd_pos++;                 break;
         default:
             if(DEBUG){ Serial.print("Unknown: "); Serial.println(rcvd_buffer[rcvd_pos], HEX); }
             rcvd_pos++;
