@@ -17,17 +17,17 @@
   * 
  * Version 1.0.0
  * Created on 30 Oct 2022
- * Last Modification 30 Oct 2022
+ * Last Modification 27 Nov 2023
  *******************************************************************************
  * CHANGELOG
- *   -
+ *   - 27 Nov 2023 - This version contains only the code for controlling an SD card
  *******************************************************************************
  */
 
 /* ---------------------------LICENSE NOTICE--------------------------------
  *  MIT License
  *  
- *  Copyright (c) 2022 David Asta
+ *  Copyright (c) 2022-2023 David Asta
  *  
  *  Permission is hereby granted, free of charge, to any person obtaining a copy
  *  of this software and associated documentation files (the "Software"), to deal
@@ -62,21 +62,7 @@
 #define LED_ON              LOW
 #define LED_OFF             HIGH
 
-#define FDD_SECSIZE         512         // 512 bytes per Sector
-
 // Commands
-#define FDD_CMD_GET_STATUS  0xA0
-#define FDD_CMD_BUSY        0xA1
-#define FDD_CMD_READ_SEC    0xA2
-#define FDD_CMD_WRITE_SEC   0xA3
-#define FDD_CMD_CHKDISKIN   0xA4        // Checks if a disk is in th drive
-#define FDD_CMD_CHKWPROTECT 0xA5        // Checks if disk is Write Protected
-#define FDD_CMD_SETYPE_DD   0xA6        // Set drive as Double-density
-#define FDD_CMD_SETYPE_HD   0xA7        // Set drive as High-density (default)
-#define FDD_CMD_FORMAT      0xA8        // Low-level format (no file system)
-#define FDD_CMD_MOTOR_ON    0xAA        // Turns the FDD motor on
-#define FDD_CMD_MOTOR_OFF   0xAB        // Turns the FDD motor off
-
 #define SD_CMD_GET_STATUS   0xB0
 #define SD_CMD_BUSY         0xB1
 #define SD_CMD_READ_SEC     0xB2
@@ -84,17 +70,6 @@
 #define SD_CMD_CLOSE_IMG    0xB4
 #define SD_CMD_OPEN_IMG     0xB5
 #define SD_CMD_IMG_INFO     0xB6
-
-#define RTC_CMD_GET_INFO    0xC0
-#define RTC_CMD_GET_BATT    0xC1
-#define RTC_CMD_GET_DATE    0xC2
-#define RTC_CMD_GET_TIME    0xC3
-#define RTC_CMD_SET_DATE    0xC4
-#define RTC_CMD_SET_TIME    0xC5
-#define RTC_CMD_GET_TEMP    0xC6
-
-#define NVRAM_CMD_TEST      0xD0
-#define NVRAM_CLEAR         0xD1
 
 // Error codes
 #define SD_ERR_NOSD         0x01
