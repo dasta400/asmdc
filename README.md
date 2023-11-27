@@ -1,6 +1,7 @@
 # Arduino Serial Multi-Device Controller for dastaZ80's dzOS
 
 1. [Why this project?](#why-this-project)
+1. [Branches](#branches)
 1. [How it works?](#how-it-works)
 1. [Advantages/Disadvantages](#advantagesdisadvantages)
 1. [Commands](#commands)
@@ -37,6 +38,19 @@ So I thought, why not make an Arduino to communicate with those peripherals, and
 As all Arduinos include serial ports (TX / RX pins) and I have a spare serial port
 on the dastaZ80 (SIO/2 Channel B), it should be relatively easy to make them to
 talk to each other.
+
+---
+
+## Branches
+
+Initially I had the ASMDC as controller for FDD, RTC and SD card, but I was
+adding code I stumbled with Arduino errors because apparently I was using more
+memory than the available. Hence, I decided to separate the code in branches:
+
+* _onlyFDD_: Floppy Disk Drive (FDD) controller code.
+* _onlyRTC_: Real-Time Clock (RTC) controller code.
+* _onlySD_: SD card controller code + disk image tools.
+* _main_: left as historical, but code may be obsolete and/or not working.
 
 ---
 
