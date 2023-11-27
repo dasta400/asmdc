@@ -63,10 +63,7 @@ void setup() {
     Serial1.begin(SERIAL_DBPS);  // Serial port to dastaZ80
     Serial1.setTimeout(100);
 
-    rtc_setup();        // Set up RTC Module (RTC)
-    nvram_setup();      // Set up RTC Module (NVRAM)
     sd_setup();         // Set up SD Card Module
-    fdd_setup();        // Set up FDD Module
 
     if(DEBUG){ Serial.println("ASMDC Initialised."); }
 }
